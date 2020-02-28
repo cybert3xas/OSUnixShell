@@ -12,7 +12,6 @@
 #define TOKEN_SIZE (ARGS_MAX / 2+1)
 #define RED "\x1b[31m"
 #define BLUE "\x1b[34m"
-#define GREEN "\x1b[32m"
 #define RESET "\x1b[0m"
 
 //method definitions
@@ -123,7 +122,10 @@ void commandExecution(char* tokens[], _Bool run_background){
     char redir_input[512], redir_output[512], pipe_command[512];
 
     if(strcmp(tokens[0], "exit") == 0){
-        printf(GREEN"\n\nBye :(\n"RESET);
+        printf(BLUE "*******************************************************************************\n"
+           "************************" RESET "Thank you for using our shell!" BLUE "*************************\n"
+           "**************************************" RESET "Bye :(" BLUE "***********************************" RESET "\n");
+           sleep(2);
         exit(0);
     }else if(strcmp(tokens[0], "cd") == 0){
         if(chdir(tokens[1]) != 0){
@@ -194,13 +196,14 @@ int main(int argc, char* argv[]){
     char* user_token[TOKEN_SIZE];
 
     system("clear");
-    printf(BLUE "***********************************Unix Shell**********************************\n"
-           "*******************By: Jonathan Argumedo and Julio Hernandez*******************\n"
-           "*******************************************************************************\n" RESET);
+    printf(BLUE "***********************************" RESET "Unix Shell" BLUE "**********************************\n"
+           "******************" RESET "By: Jonathan Argumedo and Julio A Hernandez" BLUE "******************\n"
+           "*******************************************************************************" RESET "\n");
     while(1){
         getPS1();
         
         _Bool run_background = false;
+        printf(RESET);
         commandReader(user_input, user_token, &run_background);
         if(strlen(user_input) == 0){
             continue;
