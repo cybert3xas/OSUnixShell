@@ -1,3 +1,11 @@
+/**
+* Created by: Jonathan Argumedo and Julio Hernandez
+* Name: Shell Simulator
+* Class: CS 4375
+* Description: Create a shell that simulates the linux terminal. Basic commands should be able to execute, this includes pipes and
+* redirection of input and output. If errors are present, let the user know what error were encountered.
+*/
+
 #include <stdio.h>
 #include <stdbool.h>
 #include <signal.h>
