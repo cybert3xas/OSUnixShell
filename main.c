@@ -68,44 +68,44 @@ void commandReader(char* buffer, char* tokens[], _Bool* run_background){
     trim_input(buffer, length, tokens, run_background);
 }
 
+/**
+ * Apply a simple pipe method, you could run this in a loop
+ * and it will pipe for N times. Modify the size of fd.
+ */
+void pipeExecute(char* buffer[], int pipC, char* tokens[]){
+	int fd[2][2];
+    int i =0;
+	char *command[100]; //buffer for command
 
-void executePipe(char* buf[], int nr, char* tokens[]){
-    if(nr>10) return;
-	
-	int fd[10][2],i,pc;
-	char *argv[100];
-
-	for(i=0;i<nr;i++){
-		parseInput(buf[i], tokens);
-		if(i!=nr-1){
-			if(pipe(fd[i])<0){
-				perror("pipe creating was not successfull\n");
-				return;
-			}
+	parseInput(buffer[i], tokens);
+	if(i!=pipC-1){
+		if(pipe(fd[i])<0){
+			perror("PIPE: not successfull\n");
+			return;
 		}
-		if(fork()==0){//child1
-			if(i!=nr-1){
-				dup2(fd[i][1],1);
-				close(fd[i][0]);
-				close(fd[i][1]);
-			}
-
-			if(i!=0){
-				dup2(fd[i-1][0],0);
-				close(fd[i-1][1]);
-				close(fd[i-1][0]);
-			}
-			execvp(argv[0],argv);
-			perror("invalid input ");
-			exit(1);//in case exec is not successfull, exit
-		}
-		//parent
-		if(i!=0){//second process
-			close(fd[i-1][0]);
-			close(fd[i-1][1]);
-		}
-		wait(NULL);
 	}
+	if(fork()==0){
+		if(i!=pipC-1){
+		    dup2(fd[0][1],1);
+		    close(fd[0][0]);
+		    close(fd[0][1]);
+        }
+	    if(i!=0){
+		    dup2(fd[1][0],0);
+		    close(fd[1][1]);
+		    close(fd[1][0]);
+	    }
+	    if(execvp(command[0], command) < 0);{
+            perror("invalid input ");
+		    exit(-1);
+        }
+    }
+    //PARENT
+	if(i!=0){
+		close(fd[1][0]);
+		close(fd[1][1]);
+	}
+	wait(NULL);
 }
 
 
@@ -143,7 +143,7 @@ void commandExecution(char* tokens[], _Bool run_background){
             }else if(strcmp(tokens[i], "|")==0){
                 tokens[i] = NULL;
                 strcpy(pipe_command, tokens[i+1]);
-                executePipe(tokens, 1, tokens);
+                pipeExecute(tokens, 1, tokens);
             }
         }
         //child executes
