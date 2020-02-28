@@ -10,6 +10,10 @@
 
 #define ARGS_MAX 1024
 #define TOKEN_SIZE (ARGS_MAX / 2+1)
+#define RED "\x1b[31m"
+#define BLUE "\x1b[34m"
+#define GREEN "\x1b[32m"
+#define RESET "\x1b[0m"
 
 //method definitions
 void redirIn(char*);
@@ -62,7 +66,7 @@ void trim_input(char* buffer, int length, char* tokens[], _Bool* run_background)
 void commandReader(char* buffer, char* tokens[], _Bool* run_background){
     int length = read(STDIN_FILENO, buffer, ARGS_MAX);
     if((length < 0)){
-        perror("\nUnable to read command. Terminating...\n");
+        perror(RED "\nUnable to read command. Terminating...\n" RESET);
         exit(-1);
     }
     trim_input(buffer, length, tokens, run_background);
@@ -80,7 +84,7 @@ void pipeExecute(char* buffer[], int pipC, char* tokens[]){
 	parseInput(buffer[i], tokens);
 	if(i!=pipC-1){
 		if(pipe(fd[i])<0){
-			perror("PIPE: not successfull\n");
+			perror( RED "PIPE: not successfull\n" RESET);
 			return;
 		}
 	}
@@ -96,7 +100,7 @@ void pipeExecute(char* buffer[], int pipC, char* tokens[]){
 		    close(fd[1][0]);
 	    }
 	    if(execvp(command[0], command) < 0);{
-            perror("invalid input ");
+            perror(RED "invalid input " RESET);
 		    exit(-1);
         }
     }
@@ -119,7 +123,7 @@ void commandExecution(char* tokens[], _Bool run_background){
     char redir_input[512], redir_output[512], pipe_command[512];
 
     if(strcmp(tokens[0], "exit") == 0){
-        printf("\n\nBye :(\n");
+        printf(GREEN"\n\nBye :(\n"RESET);
         exit(0);
     }else if(strcmp(tokens[0], "cd") == 0){
         if(chdir(tokens[1]) != 0){
@@ -149,7 +153,7 @@ void commandExecution(char* tokens[], _Bool run_background){
         //child executes
         if(execvp(tokens[0], tokens) == -1){
             write(STDOUT_FILENO, tokens[0], strlen(tokens[0]));
-            write(STDOUT_FILENO, " :command not found.\n", strlen(" :command not found.\n"));
+            write(STDOUT_FILENO, RED " :command not found.\n", strlen(" :command not found.\n" RESET));
             exit(-1);
         }
     }else if(!run_background){
@@ -190,9 +194,9 @@ int main(int argc, char* argv[]){
     char* user_token[TOKEN_SIZE];
 
     system("clear");
-    printf("***********************************Unix Shell**********************************\n"
+    printf(BLUE "***********************************Unix Shell**********************************\n"
            "*******************By: Jonathan Argumedo and Julio Hernandez*******************\n"
-           "*******************************************************************************\n");
+           "*******************************************************************************\n" RESET);
     while(1){
         getPS1();
         
@@ -212,7 +216,7 @@ int main(int argc, char* argv[]){
 void redirOut(char* redir_output){
     int fd=0;
     if((fd = creat(redir_output, 0644)) < 0){
-        perror(" :FILE COULD NOT BE OPEN\n");
+        perror(RED " :FILE COULD NOT BE OPEN\n" RESET);
         exit(0);
     }
     dup2(fd, STDOUT_FILENO);
@@ -222,7 +226,7 @@ void redirOut(char* redir_output){
 void redirIn(char* redir_input){
     int fd=0;
     if((fd = open(redir_input, O_RDONLY, 0644)) < 0){
-        perror(" :FILE COULD NOT BE READ\n");
+        perror(RED " :FILE COULD NOT BE READ\n" RESET);
         exit(0);
     }
     dup2(fd, 0);
