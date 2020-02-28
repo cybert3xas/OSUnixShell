@@ -23,5 +23,26 @@ are three ways to achieve this.
     This is compile the code and you can launch the program by using the './shell'
     command.
 
+In addition you also have the option to export a PS1 variable before you launch the Shell.
+You can achive this by writing:
+
+* export PS1= "Julio"
+* This will replace the default '$' symbol
+
 In order to clean use the 'make clean' command.
 ```
+
+### How to use
+The shell was designed to do everything a real unix terminal can do.
+
+```
+Some examples include:
+* ls -la (List directory and permissions)
+* find /etc -print &    (initiates a background task)
+* ls > /tmp/files.txt   (Redirection of input and output)
+* ls | sort -r          (Simple pipe that sorts the directory)
+* exit                  (To exit the shell)
+* sfafsafsafdas         (invalid commands will receive an error message)
+```
+
+
