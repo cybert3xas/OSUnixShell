@@ -37,7 +37,7 @@ The shell was designed to do everything a real unix terminal can do.
 
 ```
 Some examples include:
-* ls -la (List directory and permissions)
+* ls -la                (List directory and permissions)
 * find /etc -print &    (initiates a background task)
 * ls > /tmp/files.txt   (Redirection of input and output)
 * ls | sort -r          (Simple pipe that sorts the directory)
