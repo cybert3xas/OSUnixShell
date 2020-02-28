@@ -65,12 +65,53 @@ void commandReader(char* buffer, char* tokens[], _Bool* run_background){
     trim_input(buffer, length, tokens, run_background);
 }
 
+
+void executePipe(char* buf[], int nr, char* tokens[]){
+    if(nr>10) return;
+	
+	int fd[10][2],i,pc;
+	char *argv[100];
+
+	for(i=0;i<nr;i++){
+		parseInput(buf[i], tokens);
+		if(i!=nr-1){
+			if(pipe(fd[i])<0){
+				perror("pipe creating was not successfull\n");
+				return;
+			}
+		}
+		if(fork()==0){//child1
+			if(i!=nr-1){
+				dup2(fd[i][1],1);
+				close(fd[i][0]);
+				close(fd[i][1]);
+			}
+
+			if(i!=0){
+				dup2(fd[i-1][0],0);
+				close(fd[i-1][1]);
+				close(fd[i-1][0]);
+			}
+			execvp(argv[0],argv);
+			perror("invalid input ");
+			exit(1);//in case exec is not successfull, exit
+		}
+		//parent
+		if(i!=0){//second process
+			close(fd[i-1][0]);
+			close(fd[i-1][1]);
+		}
+		wait(NULL);
+	}
+}
+
+
 /**
  * 
  */
 void commandExecution(char* tokens[], _Bool run_background){
-    int fd0,fd1,i,in=0,out=0;
-    char redir_input[512], redir_output[512];
+    int fd0,fd1,fd2,i,in=0,out=0,pipeOn=0;
+    char redir_input[512], redir_output[512], pipe_command[512];
 
     if(strcmp(tokens[0], "exit") == 0){
         exit(0);
@@ -83,8 +124,6 @@ void commandExecution(char* tokens[], _Bool run_background){
     int status;
     pid_t p = fork();
     if(p == 0){
-        char *path = (char*)malloc(ARGS_MAX*(sizeof(char)));
-        path = getenv("PATH");
         //redireciton input output
         for(i=0; tokens[i] != NULL;i++){
             if(strcmp(tokens[i], ">")==0){
@@ -95,6 +134,10 @@ void commandExecution(char* tokens[], _Bool run_background){
                 tokens[i] = NULL;
                 strcpy(redir_input, tokens[i+1]); //the left is the file being read
                 in=1;
+            }else if(strcmp(tokens[i], "|")==0){
+                tokens[i] = NULL;
+                strcpy(pipe_command, tokens[i+1]);
+                pipeOn = 1;
             }
         }
         if(out){
@@ -111,7 +154,10 @@ void commandExecution(char* tokens[], _Bool run_background){
             }
             dup2(fd0, 0);
             close(fd0);
+        }else if(pipeOn){
+            executePipe(tokens, 1, tokens);
         }
+
         execvp(tokens[0], tokens);
         perror("execvp");
         _exit(1);
@@ -122,9 +168,7 @@ void commandExecution(char* tokens[], _Bool run_background){
             exit(-1);
         }//GET THE BIN
     }else if(!run_background){
-        do{
-            waitpid(p, &status, WUNTRACED);
-        }while(!WIFEXITED(status) && !WIFSIGNALED(status));
+        wait(NULL);
     }
 }
 
@@ -136,7 +180,6 @@ void commandExecution(char* tokens[], _Bool run_background){
 void handler(int num){
     write(STDOUT_FILENO, " IS DISABLED\nPRESS ENTER...\n", 29);
 }
-
 int main(int argc, char* argv[]){
     char user_input[ARGS_MAX];
     char* user_token[TOKEN_SIZE];
