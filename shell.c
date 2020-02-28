@@ -190,7 +190,9 @@ int main(int argc, char* argv[]){
     char* user_token[TOKEN_SIZE];
 
     system("clear");
-    printf("\n*******************Created by: Jonathan Argumedo and Julio Hernandez*******************\n");
+    printf("***********************************Unix Shell**********************************\n"
+           "*******************By: Jonathan Argumedo and Julio Hernandez*******************\n"
+           "*******************************************************************************\n");
     while(1){
         getPS1();
         
